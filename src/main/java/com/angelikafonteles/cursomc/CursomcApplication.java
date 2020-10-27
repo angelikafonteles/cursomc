@@ -13,6 +13,7 @@ import com.angelikafonteles.cursomc.domain.Cidade;
 import com.angelikafonteles.cursomc.domain.Cliente;
 import com.angelikafonteles.cursomc.domain.Endereco;
 import com.angelikafonteles.cursomc.domain.Estado;
+import com.angelikafonteles.cursomc.domain.ItemPedido;
 import com.angelikafonteles.cursomc.domain.Pagamento;
 import com.angelikafonteles.cursomc.domain.PagamentoComBoleto;
 import com.angelikafonteles.cursomc.domain.PagamentoComCartao;
@@ -25,6 +26,7 @@ import com.angelikafonteles.cursomc.repositories.CidadeRepository;
 import com.angelikafonteles.cursomc.repositories.ClienteRepository;
 import com.angelikafonteles.cursomc.repositories.EnderecoRepository;
 import com.angelikafonteles.cursomc.repositories.EstadoRepository;
+import com.angelikafonteles.cursomc.repositories.ItemPedidoRepository;
 import com.angelikafonteles.cursomc.repositories.PagamentoRepository;
 import com.angelikafonteles.cursomc.repositories.PedidoRepository;
 import com.angelikafonteles.cursomc.repositories.ProdutoRepository;
@@ -55,6 +57,9 @@ public class CursomcApplication implements CommandLineRunner {
 	
 	@Autowired
 	private PagamentoRepository pagamentoRepository;
+	
+	@Autowired
+	private ItemPedidoRepository itemPedidoRepository;
 	
 	public static void main(String[] args) {
 		SpringApplication.run(CursomcApplication.class, args);
@@ -120,6 +125,19 @@ public class CursomcApplication implements CommandLineRunner {
 		
 		pedidoRepository.saveAll(Arrays.asList(ped1, ped2));
 		pagamentoRepository.saveAll(Arrays.asList(pgto1, pgto2));
+		
+		ItemPedido ip1 = new ItemPedido(ped1, p1, 0.00, 1, 2000.00);
+		ItemPedido ip2 = new ItemPedido(ped1, p3, 0.00, 2, 80.00);
+		ItemPedido ip3 = new ItemPedido(ped2, p2, 100.00, 1, 800.00);
+		
+		ped1.getItens().addAll(Arrays.asList(ip1, ip2));
+		ped2.getItens().addAll(Arrays.asList(ip3));
+		
+		p1.getItens().addAll(Arrays.asList(ip1));
+		p2.getItens().addAll(Arrays.asList(ip3));
+		p3.getItens().addAll(Arrays.asList(ip2));
+		
+		itemPedidoRepository.saveAll(Arrays.asList(ip1,ip2,ip3));
 		
 	}
 
