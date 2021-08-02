@@ -15,8 +15,8 @@ import org.thymeleaf.context.Context;
 
 import com.angelikafonteles.cursomc.domain.Pedido;
 
-public abstract class AbstractEmailService implements EmailService{
-
+public abstract class AbstractEmailService implements EmailService {
+	
 	@Value("${default.sender}")
 	private String sender;
 	
@@ -40,7 +40,6 @@ public abstract class AbstractEmailService implements EmailService{
 		sm.setSentDate(new Date(System.currentTimeMillis()));
 		sm.setText(obj.toString());
 		return sm;
-		
 	}
 	
 	protected String htmlFromTemplatePedido(Pedido obj) {
@@ -55,10 +54,9 @@ public abstract class AbstractEmailService implements EmailService{
 			MimeMessage mm = prepareMimeMessageFromPedido(obj);
 			sendHtmlEmail(mm);
 		}
-		catch(MessagingException e) {
+		catch (MessagingException e) {
 			sendOrderConfirmationEmail(obj);
 		}
-
 	}
 
 	protected MimeMessage prepareMimeMessageFromPedido(Pedido obj) throws MessagingException {
