@@ -28,30 +28,42 @@ import com.angelikafonteles.cursomc.services.exceptions.ObjectNotFoundException;
 
 @Service
 public class ClienteService {
-	
+
 	@Autowired
 	private BCryptPasswordEncoder pe;
 	@Autowired
 	private ClienteRepository repo;
 	@Autowired
 	private EnderecoRepository enderecoRepo;
-	
+
 	public List<Cliente> findAll() {
 		return repo.findAll();
 	}
 
 	public Cliente find(Integer id) {
-		
+
 		UserSS user = UserService.authenticated();
-		if(user == null || !user.hasRole(Perfil.ADMIN) && !id.equals(user.getId())) {
+		if (user == null || !user.hasRole(Perfil.ADMIN) && !id.equals(user.getId())) {
 			throw new AuthorizationException("Acesso negado");
 		}
-		
+
 		Optional<Cliente> obj = repo.findById(id);
 		return obj.orElseThrow(() -> new ObjectNotFoundException(
 				"Objeto não encontrado! Id: " + id + ", Tipo: " + Cliente.class.getName()));
 	}
+
+	public Cliente findByEmail(String email) {
+		Optional<Cliente> obj = repo.findByEmail(email);
+		return obj.orElseThrow(() -> new ObjectNotFoundException(
+				"Objeto não encontrado! Email: " + email + ", Tipo: " + Cliente.class.getName()));
+	}
 	
+	@Transactional
+	public void save(Cliente obj) {
+		obj = repo.save(obj);
+		enderecoRepo.saveAll(obj.getEnderecos());
+	}
+
 	@Transactional
 	public Cliente insert(Cliente obj) {
 		obj.setId(null);
@@ -59,7 +71,7 @@ public class ClienteService {
 		enderecoRepo.saveAll(obj.getEnderecos());
 		return obj;
 	}
-	
+
 	public Cliente update(Cliente obj) {
 		Cliente newObj = find(obj.getId());
 		updateData(newObj, obj);
@@ -71,7 +83,6 @@ public class ClienteService {
 		newObj.setEmail(obj.getEmail());
 	}
 
-
 	public void delete(Integer id) {
 		find(id);
 		try {
@@ -80,20 +91,22 @@ public class ClienteService {
 			throw new DataIntegrityException("Não é possivel excluir porque há entidades relacionadas");
 		}
 	}
-	
-	public Page<Cliente> findPage(Integer page, Integer linesPerPage, String orderBy, String direction){
+
+	public Page<Cliente> findPage(Integer page, Integer linesPerPage, String orderBy, String direction) {
 		PageRequest pageRequest = PageRequest.of(page, linesPerPage, Direction.valueOf(direction), orderBy);
 		return repo.findAll(pageRequest);
 	}
-	
+
 	public Cliente fromDTO(ClienteDTO objDto) {
 		return new Cliente(objDto.getId(), objDto.getNome(), objDto.getEmail(), null, null, null);
 	}
-	
+
 	public Cliente fromDTO(ClienteNewDTO objDto) {
-		Cliente cli = new Cliente(null, objDto.getNome(), objDto.getEmail(), objDto.getCpfOuCnpj(), TipoCliente.toEnum(objDto.getTipo()), pe.encode(objDto.getSenha()));
+		Cliente cli = new Cliente(null, objDto.getNome(), objDto.getEmail(), objDto.getCpfOuCnpj(),
+				TipoCliente.toEnum(objDto.getTipo()), pe.encode(objDto.getSenha()));
 		Cidade cid = new Cidade(objDto.getCidadeId(), null, null);
-		Endereco end = new Endereco(null, objDto.getLogradouro(), objDto.getNumero(), objDto.getComplemento(), objDto.getBairro(), objDto.getCep(), cid, cli);
+		Endereco end = new Endereco(null, objDto.getLogradouro(), objDto.getNumero(), objDto.getComplemento(),
+				objDto.getBairro(), objDto.getCep(), cid, cli);
 		cli.getEnderecos().add(end);
 		cli.getTelefones().add(objDto.getTelefone1());
 		if (objDto.getTelefone2() != null) {

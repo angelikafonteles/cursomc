@@ -13,13 +13,13 @@ import org.springframework.web.servlet.HandlerMapping;
 
 import com.angelikafonteles.cursomc.domain.Cliente;
 import com.angelikafonteles.cursomc.dto.ClienteDTO;
-import com.angelikafonteles.cursomc.repositories.ClienteRepository;
 import com.angelikafonteles.cursomc.resources.exception.FieldMessage;
+import com.angelikafonteles.cursomc.services.ClienteService;
 
 public class ClienteUpdateValidator implements ConstraintValidator<ClienteUpdate, ClienteDTO> {
 
 	@Autowired
-	private ClienteRepository repo;
+	private ClienteService service;
 	
 	@Autowired
 	private HttpServletRequest request;
@@ -38,7 +38,7 @@ public class ClienteUpdateValidator implements ConstraintValidator<ClienteUpdate
 		
 		List<FieldMessage> list = new ArrayList<>();
 
-		Cliente aux = repo.findByEmail(objDto.getEmail());
+		Cliente aux = service.findByEmail(objDto.getEmail());
 		if (aux != null && !aux.getId().equals(uriId)) {
 			list.add(new FieldMessage("email", "Email já existente"));
 		}
