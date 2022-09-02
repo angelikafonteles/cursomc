@@ -3,6 +3,7 @@ package com.angelikafonteles.cursomc.services.validation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintValidator;
@@ -13,13 +14,13 @@ import org.springframework.web.servlet.HandlerMapping;
 
 import com.angelikafonteles.cursomc.domain.Cliente;
 import com.angelikafonteles.cursomc.dto.ClienteDTO;
+import com.angelikafonteles.cursomc.repositories.ClienteRepository;
 import com.angelikafonteles.cursomc.resources.exception.FieldMessage;
-import com.angelikafonteles.cursomc.services.ClienteService;
 
 public class ClienteUpdateValidator implements ConstraintValidator<ClienteUpdate, ClienteDTO> {
 
 	@Autowired
-	private ClienteService service;
+	private ClienteRepository repo;
 	
 	@Autowired
 	private HttpServletRequest request;
@@ -38,9 +39,15 @@ public class ClienteUpdateValidator implements ConstraintValidator<ClienteUpdate
 		
 		List<FieldMessage> list = new ArrayList<>();
 
-		Cliente aux = service.findByEmail(objDto.getEmail());
-		if (aux != null && !aux.getId().equals(uriId)) {
-			list.add(new FieldMessage("email", "Email já existente"));
+		Cliente cliente = null;
+		Optional <Cliente> aux = repo.findByEmail(objDto.getEmail());
+		
+		if (aux.isPresent()) {
+			list.add(new FieldMessage("email", "Email já existente"));	
+			cliente = aux.get();
+		}
+		if (cliente != null && !cliente.getId().equals(uriId)) {
+			list.add(new FieldMessage("email", "UriId não confere"));			
 		}
 
 		for (FieldMessage e : list) {

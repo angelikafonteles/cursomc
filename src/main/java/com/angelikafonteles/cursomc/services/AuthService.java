@@ -1,5 +1,6 @@
 package com.angelikafonteles.cursomc.services;
 
+import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,12 +8,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.angelikafonteles.cursomc.domain.Cliente;
+import com.angelikafonteles.cursomc.repositories.ClienteRepository;
+import com.angelikafonteles.cursomc.services.exceptions.ObjectNotFoundException;
 
 @Service
 public class AuthService {
 
 	@Autowired
-	private ClienteService clienteService;
+	private ClienteRepository repo;
 	@Autowired
 	private BCryptPasswordEncoder pe;
 	@Autowired
@@ -22,11 +25,17 @@ public class AuthService {
 
 	public void sendNewPassword(String email) {
 
-		Cliente cliente = clienteService.findByEmail(email);
+		Optional <Cliente> aux = repo.findByEmail(email);
+		if (aux.isEmpty()) {
+			new ObjectNotFoundException(
+					"Objeto não encontrado! Email: " + email + ", Tipo: " + Cliente.class.getName());
+		}
+		
+		Cliente cliente = aux.get();
 		String newPass = newPassword();
 		cliente.setSenha(pe.encode(newPass));
 		
-		clienteService.save(cliente);
+		repo.save(cliente);
 		emailService.sendNewPasswordEmail(cliente, newPass);
 	}
 
